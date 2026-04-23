@@ -233,127 +233,137 @@ Always yours ❤️
 <script>
 // RIDDLES
 function checkR1(){
-let a=r1.value.toLowerCase().trim();
-if(a==="hod"||a==="high on desserts"){
-s1.classList.add("show");
-r2box.style.display="block";
-r2.focus();
-}}
+  let a=r1.value.toLowerCase().trim();
+  if(a==="hod"||a==="high on desserts"){
+    s1.classList.add("show");
+    r2box.style.display="block";
+    r2.focus();
+  }
+}
 function checkR2(){
-let a=r2.value.toLowerCase().trim();
-if(a==="room 6"||a==="room six"){
-s2.classList.add("show");
-r3box.style.display="block";
-r3.focus();
-}}
+  let a=r2.value.toLowerCase().trim();
+  if(a==="room 6"||a==="room six"){
+    s2.classList.add("show");
+    r3box.style.display="block";
+    r3.focus();
+  }
+}
 function checkR3(){
-let a=r3.value.toLowerCase().trim();
-if(a==="mkt"){
-s3.classList.add("show");
-r4box.style.display="block";
-r4.focus();
-}}
+  let a=r3.value.toLowerCase().trim();
+  if(a==="mkt"){
+    s3.classList.add("show");
+    r4box.style.display="block";
+    r4.focus();
+  }
+}
 function checkR4(){
-let a=r4.value.toLowerCase().trim();
-if(a==="remo"){
-s4.classList.add("show");
-setTimeout(showProposal,800);
-}}
+  let a=r4.value.toLowerCase().trim();
+  if(a==="remo"){
+    s4.classList.add("show");
+    setTimeout(showProposal,800);
+  }
+}
 
 // POPUP
 function showProposal(){
-let p=document.createElement("div");
-p.className="popup";
-p.innerHTML=`<p style="font-size:30px;text-align:center;">
-So Nee Yenna Kalyanam Panikiviya?<br>
-Aama Na Vandhu Bike Le Okaru Chellam.</p>
-<button onclick="yes()">Yes</button>
-<button onclick="no()">No</button>`;
-document.body.appendChild(p);
+  let p=document.createElement("div");
+  p.className="popup";
+  p.innerHTML=`<p style="font-size:30px;text-align:center;">
+  So Nee Yenna Kalyanam Panikiviya?<br>
+  Aama Na Vandhu Bike Le Okaru Chellam.</p>
+  <button onclick="yes()">Yes</button>
+  <button onclick="no()">No</button>`;
+  document.body.appendChild(p);
 }
 function no(){ alert("Wrong 😏"); document.querySelector(".popup").remove(); showProposal();}
 function yes(){ document.querySelector(".popup").remove(); treasure.style.display="flex";}
 
 // TREASURE
 function openChest(){
-letter.style.display="block";
-setTimeout(()=>letter.classList.add("open"),100);
+  letter.style.display="block";
+  setTimeout(()=>letter.classList.add("open"),100);
 }
 
-// HAND TRACKING (FIXED + STABLE)
-const video = document.getElementById("webcam");
-const canvas = document.createElement("canvas");
-const ctx = canvas.getContext("2d");
-document.body.appendChild(canvas);
+// HAND TRACKING (STABILIZED)
+const videoElement = document.getElementById("webcam");
+const canvasElement = document.createElement("canvas");
+const canvasCtx = canvasElement.getContext("2d");
+
+// Ensure canvas is positioned correctly over the video
+canvasElement.style.position = "fixed";
+canvasElement.style.bottom = "10px";
+canvasElement.style.right = "10px";
+canvasElement.style.width = "200px";
+canvasElement.style.borderRadius = "10px";
+canvasElement.style.zIndex = "3001";
+canvasElement.style.pointerEvents = "none"; // Clicks go through to video if needed
+document.body.appendChild(canvasElement);
 
 let lastY = null;
-let lost = 0;
+let lostFrames = 0;
 
-// Initialize Hands after the window loads to ensure MediaPipe is ready
-window.onload = () => {
-    const hands = new Hands({
-        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+function onResults(results) {
+  // Sync canvas size to video
+  canvasElement.width = videoElement.videoWidth;
+  canvasElement.height = videoElement.videoHeight;
+  
+  canvasCtx.save();
+  canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+  if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+    lostFrames = 0;
+    const landmarks = results.multiHandLandmarks[0];
+    
+    // Index (8) and Middle (12) tips
+    const indexTip = landmarks[8];
+    const middleTip = landmarks[12];
+
+    // Draw Red Dots
+    [indexTip, middleTip].forEach(point => {
+      canvasCtx.beginPath();
+      canvasCtx.arc(point.x * canvasElement.width, point.y * canvasElement.height, 12, 0, 2 * Math.PI);
+      canvasCtx.fillStyle = "red";
+      canvasCtx.fill();
     });
 
-    hands.setOptions({
-        maxNumHands: 1,
-        modelComplexity: 1,
-        minDetectionConfidence: 0.5,
-        minTrackingConfidence: 0.5
-    });
+    // Scroll Logic
+    let currentY = (indexTip.y + middleTip.y) / 2;
 
-    hands.onResults((res) => {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (lastY !== null) {
+      let diff = currentY - lastY;
+      if (Math.abs(diff) > 0.001) { // Precision threshold
+        window.scrollBy(0, diff * 3000); // 3000 = Scroll Speed
+      }
+    }
+    lastY = currentY;
+  } else {
+    lostFrames++;
+    if (lostFrames > 10) lastY = null;
+  }
+  canvasCtx.restore();
+}
 
-        if (res.multiHandLandmarks && res.multiHandLandmarks.length > 0) {
-            lost = 0;
-            let h = res.multiHandLandmarks[0];
-            
-            // Index finger tip (8) and Middle finger tip (12)
-            let i = h[8];
-            let m = h[12];
+const hands = new Hands({
+  locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+});
 
-            // Draw red dots on the fingers
-            [i, m].forEach(p => {
-                ctx.beginPath();
-                ctx.arc(p.x * canvas.width, p.y * canvas.height, 8, 0, 2 * Math.PI);
-                ctx.fillStyle = "red";
-                ctx.fill();
-            });
+hands.setOptions({
+  maxNumHands: 1,
+  modelComplexity: 1,
+  minDetectionConfidence: 0.7,
+  minTrackingConfidence: 0.7
+});
 
-            // Calculate average Y position of the two fingers
-            let avgY = (i.y + m.y) / 2;
+hands.onResults(onResults);
 
-            if (lastY !== null) {
-                let diff = avgY - lastY;
-                // Sensitivty threshold: 0.002
-                if (Math.abs(diff) > 0.002) {
-                    // Multiply diff for scroll speed. 
-                    // Movement is inverted (up is down) for natural feel.
-                    window.scrollBy({
-                        top: diff * 2500, 
-                        behavior: 'auto'
-                    });
-                }
-            }
-            lastY = avgY;
-        } else {
-            lost++;
-            if (lost > 10) lastY = null;
-        }
-    });
+const camera = new Camera(videoElement, {
+  onFrame: async () => {
+    await hands.send({image: videoElement});
+  },
+  width: 640,
+  height: 480
 
-    const camera = new Camera(video, {
-        onFrame: async () => {
-            await hands.send({ image: video });
-        },
-        width: 640,
-        height: 480
-    });
-    camera.start();
-};
+camera.start();
 </script>
 
 </body>
