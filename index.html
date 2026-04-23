@@ -120,7 +120,6 @@ body::before {
   font-family:cursive;
   font-size:20px;
   line-height:1.8;
-
   max-height:0;
   overflow:hidden;
   transition:max-height 2s ease;
@@ -239,7 +238,6 @@ if(a==="hod"||a==="high on desserts"){
 s1.classList.add("show");
 r2box.style.display="block";
 r2.focus();
-window.scrollBy(0,window.innerHeight);
 }}
 function checkR2(){
 let a=r2.value.toLowerCase().trim();
@@ -247,7 +245,6 @@ if(a==="room 6"||a==="room six"){
 s2.classList.add("show");
 r3box.style.display="block";
 r3.focus();
-window.scrollBy(0,window.innerHeight);
 }}
 function checkR3(){
 let a=r3.value.toLowerCase().trim();
@@ -255,7 +252,6 @@ if(a==="mkt"){
 s3.classList.add("show");
 r4box.style.display="block";
 r4.focus();
-window.scrollBy(0,window.innerHeight);
 }}
 function checkR4(){
 let a=r4.value.toLowerCase().trim();
@@ -275,34 +271,38 @@ Aama Na Vandhu Bike Le Okaru Chellam.</p>
 <button onclick="no()">No</button>`;
 document.body.appendChild(p);
 }
-function no(){ alert("Wrong answer 😏"); document.querySelector(".popup").remove(); showProposal();}
+function no(){ alert("Wrong 😏"); document.querySelector(".popup").remove(); showProposal();}
 function yes(){ document.querySelector(".popup").remove(); treasure.style.display="flex";}
 
 // TREASURE
 function openChest(){
 letter.style.display="block";
-setTimeout(()=>{letter.classList.add("open")},100);
+setTimeout(()=>letter.classList.add("open"),100);
 }
 
-// HAND TRACKING (WORKING)
+// HAND TRACKING (FIXED + STABLE)
 const video=document.getElementById("webcam");
 const canvas=document.createElement("canvas");
 const ctx=canvas.getContext("2d");
 document.body.appendChild(canvas);
 
-let lastY=null,lost=0;
+let lastY=null, lost=0;
+
 const hands=new Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`});
-hands.setOptions({maxNumHands:1,minDetectionConfidence:0.7,minTrackingConfidence:0.7});
+hands.setOptions({maxNumHands:1,minDetectionConfidence:0.6,minTrackingConfidence:0.6});
 
 hands.onResults(res=>{
 canvas.width=video.videoWidth;
 canvas.height=video.videoHeight;
 ctx.clearRect(0,0,canvas.width,canvas.height);
 
-if(res.multiHandLandmarks){
-let h=res.multiHandLandmarks[0];
-let i=h[8],m=h[12];
+if(res.multiHandLandmarks && res.multiHandLandmarks.length>0){
+lost=0;
 
+let h=res.multiHandLandmarks[0];
+let i=h[8], m=h[12];
+
+// dots
 [i,m].forEach(p=>{
 ctx.beginPath();
 ctx.arc(p.x*canvas.width,p.y*canvas.height,10,0,2*Math.PI);
@@ -310,18 +310,28 @@ ctx.fillStyle="red";
 ctx.fill();
 });
 
-let y=(i.y+m.y)/2;
+let avgY=(i.y+m.y)/2;
+
 if(lastY!==null){
-let d=y-lastY;
-if(Math.abs(d)>0.003) window.scrollBy(0,d*5000);
+let diff=avgY-lastY;
+if(Math.abs(diff)>0.005){
+window.scrollBy(0,diff*1200);
 }
-lastY=y;
+}
+
+lastY=avgY;
+
 }else{
-lost++; if(lost>5) lastY=null;
+lost++;
+if(lost>5) lastY=null;
 }
 });
 
-new Camera(video,{onFrame:async()=>await hands.send({image:video})}).start();
+new Camera(video,{
+onFrame:async()=>await hands.send({image:video}),
+width:640,
+height:480
+}).start();
 </script>
 
 </body>
