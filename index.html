@@ -3,162 +3,325 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>For You ❤️</title>
 
 <style>
 body {
   margin: 0;
-  font-family: Arial;
-  background: #0f0f0f;
+  font-family: Georgia, serif;
+  background: radial-gradient(circle at top, #0b0f1a, #000);
   color: white;
-  text-align: center;
+  overflow-x: hidden;
 }
 
+/* stars */
+body::before {
+  content: "";
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background: url('https://www.transparenttextures.com/patterns/stardust.png');
+  opacity: 0.25;
+  z-index: -1;
+}
+
+/* shooting star */
+@keyframes shoot {
+  0% { transform: translate(-200px, -200px); opacity: 1;}
+  100% { transform: translate(120vw, 100vh); opacity: 0;}
+}
+.shooting-star {
+  position: fixed;
+  width: 2px;
+  height: 80px;
+  background: white;
+  top: 10%;
+  left: 0;
+  animation: shoot 5s linear infinite;
+}
+
+/* layout */
 .section {
-  padding: 100px 20px;
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 100px 10%;
+  opacity: 0;
+  transform: translateY(40px);
+  transition: 1s ease;
+}
+
+.section.show {
+  display: flex;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.section:nth-child(even) {
+  flex-direction: row-reverse;
 }
 
 .photo {
-  width: 280px;
+  width: 320px;
   border-radius: 20px;
-  margin-top: 20px;
 }
 
-video, canvas {
-  position: fixed;
-  bottom: 10px;
-  right: 10px;
-  width: 200px;
-  border-radius: 10px;
+.text-box {
+  max-width: 400px;
 }
 
-#fallback {
-  position: fixed;
-  top: 10px;
-  width: 100%;
+.text-box h2 {
+  font-size: 28px;
+}
+
+.riddle {
   text-align: center;
-  color: pink;
-  font-size: 14px;
+  margin-top: 100px;
+}
+
+.riddle input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid white;
+  color: white;
+  font-size: 18px;
+  text-align: center;
+}
+
+/* popup */
+.popup {
+  position: fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background: rgba(0,0,0,0.85);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+  z-index:999;
+}
+
+/* treasure */
+#treasure {
+  display:none;
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+  background: radial-gradient(circle, white, black);
+  z-index:1000;
+  color:black;
+}
+
+/* custom cursor */
+#cursor {
+  position: fixed;
+  width: 14px;
+  height: 14px;
+  background: white;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 2000;
 }
 </style>
 </head>
 
 <body>
 
-<div id="fallback">If gestures don’t work, just scroll normally ❤️</div>
+<div class="shooting-star"></div>
+<div id="cursor"></div>
 
-<h1>For You ❤️</h1>
-
-<div class="section">
-  <p>You make everything better ✨</p>
-  <img src="photo1.jpg" class="photo">
+<!-- RIDDLE 1 -->
+<div class="riddle">
+<p>Our go-to place to sweeten our tongues, even among a thousand ones</p>
+<input id="r1">
+<button onclick="checkR1()">→</button>
 </div>
 
-<div class="section">
-  <p>Every moment with you feels special ❤️</p>
-  <img src="photo2.jpg" class="photo">
+<div id="s1" class="section">
+<img src="photo1.jpg" class="photo">
+<div class="text-box">
+<h2>You changed everything</h2>
+<p>And I didn’t even see it coming.</p>
+</div>
 </div>
 
-<div class="section">
-  <p>You are my favorite person 💫</p>
-  <img src="photo3.jpg" class="photo">
+<!-- RIDDLE 2 -->
+<div id="r2box" class="riddle" style="display:none">
+<p>The place where we sat, the rendezvous where it all began.</p>
+<input id="r2">
+<button onclick="checkR2()">→</button>
 </div>
 
-<div class="section">
-  <p>And I wouldn’t trade this for anything 💖</p>
-  <img src="photo4.jpg" class="photo">
+<div id="s2" class="section">
+<img src="photo2.jpg" class="photo">
+<div class="text-box">
+<h2>It started there</h2>
+<p>But it didn’t stay there.</p>
+</div>
 </div>
 
-<div class="section">
-  <h2>My love ❤️</h2>
-  <p>This was just a small surprise for you.</p>
+<!-- RIDDLE 3 -->
+<div id="r3box" class="riddle" style="display:none">
+<p>We put this love in a photograph, we make these memories for ourselves.</p>
+<input id="r3">
+<button onclick="checkR3()">→</button>
 </div>
 
-<video id="webcam" autoplay playsinline muted></video>
-<canvas id="canvas"></canvas>
+<div id="s3" class="section">
+<img src="photo3.jpg" class="photo">
+<div class="text-box">
+<h2>Memories</h2>
+<p>We built something real.</p>
+</div>
+</div>
+
+<!-- RIDDLE 4 -->
+<div id="r4box" class="riddle" style="display:none">
+<p>The best coupleeeee in the entire universeeee.</p>
+<input id="r4">
+<button onclick="checkR4()">→</button>
+</div>
+
+<div id="s4" class="section">
+<img src="photo4.jpg" class="photo">
+<div class="text-box">
+<h2>Us</h2>
+<p>Always us.</p>
+</div>
+</div>
+
+<!-- TREASURE -->
+<div id="treasure">
+<h2>Click to Open the Treasure Chest Chellakutty</h2>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
 
 <script>
-const video = document.getElementById("webcam");
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
 
-let lastY = null;
-let trackingActive = false;
+// ===== RIDDLES (NO HINTS, EXACT MATCH) =====
 
-// Detect if mobile
-const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-// If mobile → skip hand tracking entirely
-if (!isMobile) {
-
-  const hands = new Hands({
-    locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
-  });
-
-  hands.setOptions({
-    maxNumHands: 1,
-    minDetectionConfidence: 0.6,
-    minTrackingConfidence: 0.6
-  });
-
-  hands.onResults(results => {
-
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-
-      trackingActive = true;
-
-      const hand = results.multiHandLandmarks[0];
-
-      const indexFinger = hand[8];
-      const middleFinger = hand[12];
-
-      // Draw big visible dots
-      [indexFinger, middleFinger].forEach(point => {
-        ctx.beginPath();
-        ctx.arc(point.x * canvas.width, point.y * canvas.height, 10, 0, 2*Math.PI);
-        ctx.fillStyle = "red";
-        ctx.fill();
-      });
-
-      const avgY = (indexFinger.y + middleFinger.y) / 2;
-
-      if (lastY !== null) {
-        const diff = avgY - lastY;
-
-        if (Math.abs(diff) > 0.005) {
-          window.scrollBy(0, diff * 1200);
-        }
-      }
-
-      lastY = avgY;
-    }
-  });
-
-  const camera = new Camera(video, {
-    onFrame: async () => {
-      await hands.send({ image: video });
-    },
-    width: 640,
-    height: 480
-  });
-
-  camera.start();
+function checkR1(){
+let a = document.getElementById("r1").value.toLowerCase().trim();
+if(a === "hod" || a === "high on desserts"){
+show("s1");
+document.getElementById("r2box").style.display="block";
+}
 }
 
-// Hide fallback if tracking works
-setTimeout(() => {
-  if (trackingActive) {
-    document.getElementById("fallback").style.display = "none";
-  }
-}, 4000);
+function checkR2(){
+let a = document.getElementById("r2").value.toLowerCase().trim();
+if(a === "room 6" || a === "room six"){
+show("s2");
+document.getElementById("r3box").style.display="block";
+}
+}
+
+function checkR3(){
+let a = document.getElementById("r3").value.toLowerCase().trim();
+if(a === "mkt"){
+show("s3");
+document.getElementById("r4box").style.display="block";
+}
+}
+
+function checkR4(){
+let a = document.getElementById("r4").value.toLowerCase().trim();
+if(a === "remo"){
+show("s4");
+setTimeout(proposal, 800);
+}
+}
+
+function show(id){
+document.getElementById(id).classList.add("show");
+}
+
+// ===== PROPOSAL POPUP =====
+
+function proposal(){
+let pop=document.createElement("div");
+pop.className="popup";
+pop.innerHTML=`
+<p>So Nee Yenna Kalyanam Panikiviya?<br>Aama Na Vandhu Bike Le Okaru Chellam.</p>
+<button onclick="yes()">Yes</button>
+<button onclick="no()">No</button>
+`;
+document.body.appendChild(pop);
+}
+
+function no(){
+alert("Wrong answer 😏");
+document.querySelector(".popup").remove();
+proposal();
+}
+
+function yes(){
+document.querySelector(".popup").remove();
+document.getElementById("treasure").style.display="flex";
+}
+
+// ===== HAND TRACKING CURSOR =====
+
+const cursor = document.getElementById("cursor");
+let pinch = false;
+
+const video = document.createElement("video");
+video.style.display="none";
+document.body.appendChild(video);
+
+const hands = new Hands({
+locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+});
+
+hands.setOptions({
+maxNumHands:1,
+minDetectionConfidence:0.6,
+minTrackingConfidence:0.6
+});
+
+hands.onResults(res=>{
+if(res.multiHandLandmarks){
+
+const hand=res.multiHandLandmarks[0];
+const index=hand[8];
+const thumb=hand[4];
+
+// cursor movement
+let x=index.x*window.innerWidth;
+let y=index.y*window.innerHeight;
+
+cursor.style.left=x+"px";
+cursor.style.top=y+"px";
+
+// pinch detection
+let dist=Math.hypot(index.x-thumb.x,index.y-thumb.y);
+
+if(dist<0.04){
+pinch=true;
+}else{
+if(pinch){
+document.elementFromPoint(x,y)?.click();
+}
+pinch=false;
+}
+}
+});
+
+const camera = new Camera(video,{
+onFrame: async()=>{await hands.send({image:video})},
+width:640,
+height:480
+});
+camera.start();
+
 </script>
 
 </body>
