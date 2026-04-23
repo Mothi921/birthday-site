@@ -1,298 +1,100 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<style>
-body {
-  margin:0;
-  font-family: Helvetica, Arial, sans-serif;
-  background: radial-gradient(circle at top, #020617, #000);
-  color:white;
-  overflow-x:hidden;
-}
-
-/* STAR BACKGROUND */
-body::before {
-  content:"";
-  position:fixed;
-  width:100%;
-  height:100%;
-  background:url("https://www.transparenttextures.com/patterns/stardust.png");
-  opacity:0.4;
-  z-index:-2;
-}
-
-/* METEOR */
-.meteor {
-  position:fixed;
-  width:3px;
-  height:120px;
-  background:linear-gradient(white, transparent);
-  top:-100px;
-  left:-100px;
-  transform: rotate(45deg);
-  animation: meteorMove 5s linear infinite;
-  z-index:-1;
-}
-
-@keyframes meteorMove {
-  0% {
-    transform: translate(-200px,-200px) rotate(45deg);
-    opacity:1;
-  }
-  100% {
-    transform: translate(120vw,120vh) rotate(45deg);
-    opacity:0;
-  }
-}
-
-/* SECTIONS */
-.section {
-  display:none;
-  width:100%;
-  height:100vh;
-  align-items:center;
-  justify-content:space-between;
-  padding:0 8%;
-}
-
-.section.show {
-  display:flex;
-}
-
-.photo {
-  width:50%;
-  height:75%;
-  object-fit:cover;
-  border-radius:20px;
-  box-shadow:0 0 40px rgba(255,255,255,0.25);
-}
-
-.text-box {
-  width:40%;
-}
-
-.text-box h2 {
-  font-size:42px;
-}
-
-.text-box p {
-  font-size:20px;
-  line-height:1.7;
-}
-
-/* RIDDLE */
-.riddle {
-  text-align:center;
-  margin-top:120px;
-}
-
-.riddle input {
-  padding:12px 20px;
-  border-radius:25px;
-  border:none;
-  outline:none;
-  font-size:18px;
-}
-
-/* POPUP */
-.popup {
-  position:fixed;
-  width:100%;
-  height:100%;
-  background:rgba(0,0,0,0.9);
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  z-index:1000;
-}
-
-/* TREASURE */
-#treasure {
-  display:none;
-  position:fixed;
-  width:100%;
-  height:100%;
-  justify-content:center;
-  align-items:center;
-  flex-direction:column;
-  background: radial-gradient(circle,#000,#020617);
-  z-index:2000;
-  text-align:center;
-}
-
-#chest {
-  font-size:90px;
-  cursor:pointer;
-  animation: glow 2s infinite alternate;
-}
-
-@keyframes glow {
-  from { transform: scale(1); }
-  to { transform: scale(1.15); }
-}
-
-/* LETTER */
-#letter {
-  display:none;
-  background:#f5deb3;
-  color:#5a3e2b;
-  width:60%;
-  padding:40px;
-  margin-top:30px;
-  border-radius:10px;
-  font-family:cursive;
-  font-size:20px;
-  line-height:1.8;
-
-  max-height:0;
-  overflow:hidden;
-  transition:max-height 2s ease;
-}
-
-#letter.open {
-  max-height:1200px;
-}
-
-/* WEBCAM */
-video {
-  position:fixed;
-  bottom:10px;
-  right:10px;
-  width:200px;
-  border-radius:10px;
-  z-index:3000;
-}
-canvas {
-  position:fixed;
-  bottom:10px;
-  right:10px;
-  width:200px;
-  border-radius:10px;
-  z-index:3001;
-}
-</style>
-</head>
-
-<body>
-
-<div class="meteor"></div>
-
-<!-- RIDDLE 1 -->
-<div class="riddle">
-<p>Our go-to place to sweeten our tongues, even among a thousand ones</p>
-<input id="r1" onkeypress="if(event.key==='Enter')checkR1()">
-</div>
-
-<div id="s1" class="section">
-<div class="text-box">
-<h2>You changed everything</h2>
-<p>
-You walked into my life so quietly,<br>
-yet changed everything so loudly.<br>
-What started as moments,<br>
-turned into memories,<br>
-and now… something I never want to lose.
-</p>
-</div>
-<img src="photo1.jpg" class="photo">
-</div>
-
-<!-- RIDDLE 2 -->
-<div id="r2box" class="riddle" style="display:none">
-<p>The place where we sat, the rendezvous where it all began.</p>
-<input id="r2" onkeypress="if(event.key==='Enter')checkR2()">
-</div>
-
-<div id="s2" class="section">
-<img src="photo2.jpg" class="photo">
-<div class="text-box">
-<h2>Where it began</h2>
-<p>
-That place, that moment,<br>
-still lives in my mind.<br>
-Because unknowingly,<br>
-that’s where I found you.
-</p>
-</div>
-</div>
-
-<!-- RIDDLE 3 -->
-<div id="r3box" class="riddle" style="display:none">
-<p>We put this love in a photograph, we make these memories for ourselves.</p>
-<input id="r3" onkeypress="if(event.key==='Enter')checkR3()">
-</div>
-
-<div id="s3" class="section">
-<div class="text-box">
-<h2>Memories</h2>
-<p>
-Every picture holds a feeling,<br>
-every moment tells a story,<br>
-and somehow,<br>
-every memory has you in it.
-</p>
-</div>
-<img src="photo3.jpg" class="photo">
-</div>
-
-<!-- RIDDLE 4 -->
-<div id="r4box" class="riddle" style="display:none">
-<p>The best coupleeeee in the entire universeeee.</p>
-<input id="r4" onkeypress="if(event.key==='Enter')checkR4()">
-</div>
-
-<div id="s4" class="section">
-<img src="photo4.jpg" class="photo">
-<div class="text-box">
-<h2>Us</h2>
-<p>
-Not perfect,<br>
-not scripted,<br>
-just real…<br>
-and that’s what makes it everything.
-</p>
-</div>
-</div>
-
-<!-- TREASURE -->
-<div id="treasure">
-<div id="chest" onclick="openChest()">🧰</div>
-<p>Click to open the treasure chest</p>
-
-<div id="letter">
-My dearest,<br><br>
-From the moment you walked into my life,<br>
-everything quietly began to change.<br>
-What felt ordinary before,<br>
-suddenly felt meaningful.<br><br>
-Every laugh we shared,<br>
-every moment we spent,<br>
-became something I hold close to my heart.<br><br>
-You are not just a part of my life now,<br>
-you are the reason it feels complete.<br><br>
-I don’t know what the future holds,<br>
-but I know I want you in every part of it.<br><br>
-Always yours ❤️
-</div>
-</div>
-
-<video id="webcam" autoplay playsinline></video>
-
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
 
 <script>
+// ===== RIDDLE LOGIC =====
+function checkR1(){
+  let a = document.getElementById("r1").value.toLowerCase().trim();
+  if(a === "hod" || a === "high on desserts"){
+    document.getElementById("s1").classList.add("show");
+    document.getElementById("r2box").style.display = "block";
+    document.getElementById("r2").focus();
+  }
+}
+
+function checkR2(){
+  let a = document.getElementById("r2").value.toLowerCase().trim();
+  if(a === "room 6" || a === "room six"){
+    document.getElementById("s2").classList.add("show");
+    document.getElementById("r3box").style.display = "block";
+    document.getElementById("r3").focus();
+  }
+}
+
+function checkR3(){
+  let a = document.getElementById("r3").value.toLowerCase().trim();
+  if(a === "mkt"){
+    document.getElementById("s3").classList.add("show");
+    document.getElementById("r4box").style.display = "block";
+    document.getElementById("r4").focus();
+  }
+}
+
+function checkR4(){
+  let a = document.getElementById("r4").value.toLowerCase().trim();
+  if(a === "remo"){
+    document.getElementById("s4").classList.add("show");
+    setTimeout(showProposal, 800);
+  }
+}
+
+// ===== ENTER KEY FIX =====
+document.addEventListener("keydown", function(e) {
+  if (e.key === "Enter") {
+
+    const active = document.activeElement;
+
+    if (active.id === "r1") checkR1();
+    else if (active.id === "r2") checkR2();
+    else if (active.id === "r3") checkR3();
+    else if (active.id === "r4") checkR4();
+  }
+});
+
+// ===== POPUP =====
+function showProposal(){
+  let p = document.createElement("div");
+  p.className = "popup";
+  p.innerHTML = `
+    <p style="font-size:30px; text-align:center;">
+      So Nee Yenna Kalyanam Panikiviya?<br>
+      Aama Na Vandhu Bike Le Okaru Chellam.
+    </p>
+    <button onclick="yes()">Yes</button>
+    <button onclick="no()">No</button>
+  `;
+  document.body.appendChild(p);
+}
+
+function no(){
+  alert("Wrong answer 😏");
+  document.querySelector(".popup").remove();
+  showProposal();
+}
+
+function yes(){
+  document.querySelector(".popup").remove();
+  document.getElementById("treasure").style.display = "flex";
+}
+
+// ===== TREASURE =====
+function openChest(){
+  const letter = document.getElementById("letter");
+  letter.style.display = "block";
+  setTimeout(() => {
+    letter.classList.add("open");
+  }, 100);
+}
+
+// ===== HAND TRACKING (YOUR WORKING VERSION, REFINED) =====
 const video = document.getElementById("webcam");
 
-// ✅ CREATE CANVAS (instead of relying on existing one)
+// create canvas
 const canvas = document.createElement("canvas");
 const ctx = canvas.getContext("2d");
 document.body.appendChild(canvas);
 
-// Position canvas ON TOP of webcam
+// styling
 canvas.style.position = "fixed";
 canvas.style.bottom = "10px";
 canvas.style.right = "10px";
@@ -301,7 +103,6 @@ canvas.style.height = "150px";
 canvas.style.zIndex = "3001";
 canvas.style.pointerEvents = "none";
 
-// Webcam styling
 video.style.position = "fixed";
 video.style.bottom = "10px";
 video.style.right = "10px";
@@ -314,10 +115,9 @@ let lastY = null;
 let trackingActive = false;
 let lostFrames = 0;
 
-// Detect mobile
+// detect mobile
 const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-// 🚫 Disable on mobile (Safari will break anyway)
 if (!isMobile) {
 
   const hands = new Hands({
@@ -344,11 +144,10 @@ if (!isMobile) {
       lostFrames = 0;
 
       const hand = results.multiHandLandmarks[0];
-
       const indexFinger = hand[8];
       const middleFinger = hand[12];
 
-      // 🔴 DRAW DOTS (KEEP — STABLE FEEDBACK)
+      // red dots
       [indexFinger, middleFinger].forEach(point => {
         ctx.beginPath();
         ctx.arc(point.x * canvas.width, point.y * canvas.height, 10, 0, 2*Math.PI);
@@ -361,7 +160,6 @@ if (!isMobile) {
       if (lastY !== null) {
         const diff = avgY - lastY;
 
-        // 🔥 STRONG SCROLL (FIXED)
         if (Math.abs(diff) > 0.003) {
           window.scrollBy(0, diff * 5000);
         }
@@ -370,7 +168,6 @@ if (!isMobile) {
       lastY = avgY;
 
     } else {
-      // ❗ HAND LOST → RESET (IMPORTANT FIX)
       lostFrames++;
       if (lostFrames > 5) {
         lastY = null;
@@ -388,14 +185,6 @@ if (!isMobile) {
 
   camera.start();
 }
-
-// Optional fallback hide
-setTimeout(() => {
-  if (trackingActive) {
-    const fb = document.getElementById("fallback");
-    if (fb) fb.style.display = "none";
-  }
-}, 4000);
 </script>
 
 </body>
