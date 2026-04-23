@@ -280,58 +280,100 @@ letter.style.display="block";
 setTimeout(()=>letter.classList.add("open"),100);
 }
 
-// HAND TRACKING (FIXED + STABLE)
-const video=document.getElementById("webcam");
-const canvas=document.createElement("canvas");
-const ctx=canvas.getContext("2d");
+<script>
+// HAND TRACKING (RESTORED WORKING VERSION WITH RED DOTS)
+
+const video = document.getElementById("webcam");
+const canvas = document.createElement("canvas");
+const ctx = canvas.getContext("2d");
 document.body.appendChild(canvas);
 
-let lastY=null, lost=0;
+// Position canvas
+canvas.style.position = "fixed";
+canvas.style.bottom = "10px";
+canvas.style.right = "10px";
+canvas.style.width = "200px";
+canvas.style.height = "150px";
+canvas.style.zIndex = "3001";
+canvas.style.pointerEvents = "none";
 
-const hands=new Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`});
-hands.setOptions({maxNumHands:1,minDetectionConfidence:0.6,minTrackingConfidence:0.6});
+// Webcam styling
+video.style.position = "fixed";
+video.style.bottom = "10px";
+video.style.right = "10px";
+video.style.width = "200px";
+video.style.height = "150px";
+video.style.zIndex = "3000";
+video.style.borderRadius = "10px";
 
-hands.onResults(res=>{
-canvas.width=video.videoWidth;
-canvas.height=video.videoHeight;
-ctx.clearRect(0,0,canvas.width,canvas.height);
+let lastY = null;
+let lostFrames = 0;
 
-if(res.multiHandLandmarks && res.multiHandLandmarks.length>0){
-lost=0;
-
-let h=res.multiHandLandmarks[0];
-let i=h[8], m=h[12];
-
-// dots
-[i,m].forEach(p=>{
-ctx.beginPath();
-ctx.arc(p.x*canvas.width,p.y*canvas.height,10,0,2*Math.PI);
-ctx.fillStyle="red";
-ctx.fill();
+const hands = new Hands({
+  locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
 });
 
-let avgY=(i.y+m.y)/2;
-
-if(lastY!==null){
-let diff=avgY-lastY;
-if(Math.abs(diff)>0.005){
-window.scrollBy(0,diff*1200);
-}
-}
-
-lastY=avgY;
-
-}else{
-lost++;
-if(lost>5) lastY=null;
-}
+hands.setOptions({
+  maxNumHands: 1,
+  modelComplexity: 1, // 🔥 IMPORTANT (your stable version had this)
+  minDetectionConfidence: 0.7,
+  minTrackingConfidence: 0.7
 });
 
-new Camera(video,{
-onFrame:async()=>await hands.send({image:video}),
-width:640,
-height:480
-}).start();
+hands.onResults(results => {
+
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+
+    lostFrames = 0;
+
+    const hand = results.multiHandLandmarks[0];
+
+    const indexFinger = hand[8];
+    const middleFinger = hand[12];
+
+    // 🔴 RED DOTS (VISIBLE FEEDBACK)
+    [indexFinger, middleFinger].forEach(point => {
+      ctx.beginPath();
+      ctx.arc(point.x * canvas.width, point.y * canvas.height, 10, 0, 2*Math.PI);
+      ctx.fillStyle = "red";
+      ctx.fill();
+    });
+
+    const avgY = (indexFinger.y + middleFinger.y) / 2;
+
+    if (lastY !== null) {
+      const diff = avgY - lastY;
+
+      if (Math.abs(diff) > 0.003) {
+        window.scrollBy(0, diff * 5000); // 🔥 your original strong scroll
+      }
+    }
+
+    lastY = avgY;
+
+  } else {
+    // ❗ Reset when hand lost
+    lostFrames++;
+    if (lostFrames > 5) {
+      lastY = null;
+    }
+  }
+});
+
+const camera = new Camera(video, {
+  onFrame: async () => {
+    await hands.send({ image: video });
+  },
+  width: 640,
+  height: 480
+});
+
+camera.start();
 </script>
 
 </body>
