@@ -12,7 +12,6 @@ body {
   background: #0f0f0f;
   color: white;
   text-align: center;
-  scroll-behavior: smooth;
 }
 
 .section {
@@ -32,10 +31,21 @@ video, canvas {
   width: 200px;
   border-radius: 10px;
 }
+
+#fallback {
+  position: fixed;
+  top: 10px;
+  width: 100%;
+  text-align: center;
+  color: pink;
+  font-size: 14px;
+}
 </style>
 </head>
 
 <body>
+
+<div id="fallback">If gestures don’t work, just scroll normally ❤️</div>
 
 <h1>For You ❤️</h1>
 
@@ -64,7 +74,7 @@ video, canvas {
   <p>This was just a small surprise for you.</p>
 </div>
 
-<video id="webcam" autoplay playsinline></video>
+<video id="webcam" autoplay playsinline muted></video>
 <canvas id="canvas"></canvas>
 
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
@@ -75,127 +85,80 @@ const video = document.getElementById("webcam");
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-canvas.width = 640;
-canvas.height = 480;
-
 let lastY = null;
+let trackingActive = false;
 
-const hands = new Hands({
-  locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
-});
+// Detect if mobile
+const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-hands.setOptions({
-  maxNumHands: 1,
-  minDetectionConfidence: 0.7,
-  minTrackingConfidence: 0.7
-});
+// If mobile → skip hand tracking entirely
+if (!isMobile) {
 
-hands.onResults(results => {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const hands = new Hands({
+    locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+  });
 
-  if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+  hands.setOptions({
+    maxNumHands: 1,
+    minDetectionConfidence: 0.6,
+    minTrackingConfidence: 0.6
+  });
 
-    const hand = results.multiHandLandmarks[0];
+  hands.onResults(results => {
 
-    const indexFinger = hand[8];
-    const middleFinger = hand[12];
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
 
-    // DRAW RED DOTS (debug)
-    [indexFinger, middleFinger].forEach(point => {
-      ctx.beginPath();
-      ctx.arc(point.x * canvas.width, point.y * canvas.height, 8, 0, 2*Math.PI);
-      ctx.fillStyle = "red";
-      ctx.fill();
-    });
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // average Y position
-    const avgY = (indexFinger.y + middleFinger.y) / 2;
+    if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
 
-    if (lastY !== null) {
-      const diff = avgY - lastY;
+      trackingActive = true;
 
-      if (Math.abs(diff) > 0.01) {
-        window.scrollBy(0, diff * 1200);
+      const hand = results.multiHandLandmarks[0];
+
+      const indexFinger = hand[8];
+      const middleFinger = hand[12];
+
+      // Draw big visible dots
+      [indexFinger, middleFinger].forEach(point => {
+        ctx.beginPath();
+        ctx.arc(point.x * canvas.width, point.y * canvas.height, 10, 0, 2*Math.PI);
+        ctx.fillStyle = "red";
+        ctx.fill();
+      });
+
+      const avgY = (indexFinger.y + middleFinger.y) / 2;
+
+      if (lastY !== null) {
+        const diff = avgY - lastY;
+
+        if (Math.abs(diff) > 0.005) {
+          window.scrollBy(0, diff * 1200);
+        }
       }
+
+      lastY = avgY;
     }
+  });
 
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+  const camera = new Camera(video, {
+    onFrame: async () => {
+      await hands.send({ image: video });
+    },
+    width: 640,
+    height: 480
+  });
 
-<script>
-const video = document.getElementById("webcam");
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-
-// IMPORTANT FIX
-function resizeCanvas() {
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
+  camera.start();
 }
 
-let lastY = null;
-
-const hands = new Hands({
-  locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
-});
-
-hands.setOptions({
-  maxNumHands: 1,
-  modelComplexity: 1,
-  minDetectionConfidence: 0.7,
-  minTrackingConfidence: 0.7
-});
-
-hands.onResults(results => {
-
-  // FIX: sync canvas size
-  resizeCanvas();
-
-  ctx.save();
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-
-    const hand = results.multiHandLandmarks[0];
-
-    const indexFinger = hand[8];
-    const middleFinger = hand[12];
-
-    // 🔴 DRAW CLEAR BIG DOTS
-    [indexFinger, middleFinger].forEach(point => {
-      ctx.beginPath();
-      ctx.arc(point.x * canvas.width, point.y * canvas.height, 12, 0, 2 * Math.PI);
-      ctx.fillStyle = "red";
-      ctx.fill();
-    });
-
-    // scrolling logic
-    const avgY = (indexFinger.y + middleFinger.y) / 2;
-
-    if (lastY !== null) {
-      const diff = avgY - lastY;
-
-      if (Math.abs(diff) > 0.005) {
-        window.scrollBy(0, diff * 1500);
-      }
-    }
-
-    lastY = avgY;
+// Hide fallback if tracking works
+setTimeout(() => {
+  if (trackingActive) {
+    document.getElementById("fallback").style.display = "none";
   }
-
-  ctx.restore();
-});
-
-const camera = new Camera(video, {
-  onFrame: async () => {
-    await hands.send({ image: video });
-  },
-  width: 640,
-  height: 480
-});
-
-camera.start();
+}, 4000);
 </script>
 
 </body>
