@@ -285,122 +285,117 @@ Always yours ❤️
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
 
 <script>
+const video = document.getElementById("webcam");
 
-// ===== RIDDLES =====
-function checkR1(){
-let a=r1.value.toLowerCase().trim();
-if(a==="hod"||a==="high on desserts"){
-s1.classList.add("show");
-r2box.style.display="block";
-}
-}
-function checkR2(){
-let a=r2.value.toLowerCase().trim();
-if(a==="room 6"||a==="room six"){
-s2.classList.add("show");
-r3box.style.display="block";
-}
-}
-function checkR3(){
-let a=r3.value.toLowerCase().trim();
-if(a==="mkt"){
-s3.classList.add("show");
-r4box.style.display="block";
-}
-}
-function checkR4(){
-let a=r4.value.toLowerCase().trim();
-if(a==="remo"){
-s4.classList.add("show");
-setTimeout(showProposal,800);
-}
-}
-
-// ===== POPUP =====
-function showProposal(){
-let p=document.createElement("div");
-p.className="popup";
-p.innerHTML=`
-<p style="font-size:30px; text-align:center;">
-So Nee Yenna Kalyanam Panikiviya?<br>
-Aama Na Vandhu Bike Le Okaru Chellam.
-</p>
-<button onclick="yes()">Yes</button>
-<button onclick="no()">No</button>
-`;
-document.body.appendChild(p);
-}
-
-function no(){
-alert("Wrong answer 😏");
-document.querySelector(".popup").remove();
-showProposal();
-}
-
-function yes(){
-document.querySelector(".popup").remove();
-treasure.style.display="flex";
-}
-
-// ===== TREASURE =====
-function openChest(){
-letter.style.display="block";
-setTimeout(()=>{letter.classList.add("open")},100);
-}
-
-// ===== HAND TRACKING (STABLE SCROLL) =====
-const video=document.getElementById("webcam");
-const canvas=document.createElement("canvas");
-const ctx=canvas.getContext("2d");
+// ✅ CREATE CANVAS (instead of relying on existing one)
+const canvas = document.createElement("canvas");
+const ctx = canvas.getContext("2d");
 document.body.appendChild(canvas);
 
-let lastY=null;
+// Position canvas ON TOP of webcam
+canvas.style.position = "fixed";
+canvas.style.bottom = "10px";
+canvas.style.right = "10px";
+canvas.style.width = "200px";
+canvas.style.height = "150px";
+canvas.style.zIndex = "3001";
+canvas.style.pointerEvents = "none";
 
-const hands=new Hands({
-locateFile:file=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
-});
+// Webcam styling
+video.style.position = "fixed";
+video.style.bottom = "10px";
+video.style.right = "10px";
+video.style.width = "200px";
+video.style.height = "150px";
+video.style.zIndex = "3000";
+video.style.borderRadius = "10px";
 
-hands.setOptions({
-maxNumHands:1,
-minDetectionConfidence:0.7,
-minTrackingConfidence:0.7
-});
+let lastY = null;
+let trackingActive = false;
+let lostFrames = 0;
 
-hands.onResults(results=>{
-canvas.width=video.videoWidth;
-canvas.height=video.videoHeight;
-ctx.clearRect(0,0,canvas.width,canvas.height);
+// Detect mobile
+const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-if(results.multiHandLandmarks){
-let hand=results.multiHandLandmarks[0];
-let i=hand[8], m=hand[12];
+// 🚫 Disable on mobile (Safari will break anyway)
+if (!isMobile) {
 
-// dots
-[i,m].forEach(p=>{
-ctx.beginPath();
-ctx.arc(p.x*canvas.width,p.y*canvas.height,8,0,2*Math.PI);
-ctx.fillStyle="red";
-ctx.fill();
-});
+  const hands = new Hands({
+    locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+  });
 
-let avgY=(i.y+m.y)/2;
+  hands.setOptions({
+    maxNumHands: 1,
+    modelComplexity: 1,
+    minDetectionConfidence: 0.7,
+    minTrackingConfidence: 0.7
+  });
 
-if(lastY!==null){
-let diff=avgY-lastY;
-if(Math.abs(diff)>0.003){
-window.scrollBy(0,diff*4000);
+  hands.onResults(results => {
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+
+      trackingActive = true;
+      lostFrames = 0;
+
+      const hand = results.multiHandLandmarks[0];
+
+      const indexFinger = hand[8];
+      const middleFinger = hand[12];
+
+      // 🔴 DRAW DOTS (KEEP — STABLE FEEDBACK)
+      [indexFinger, middleFinger].forEach(point => {
+        ctx.beginPath();
+        ctx.arc(point.x * canvas.width, point.y * canvas.height, 10, 0, 2*Math.PI);
+        ctx.fillStyle = "red";
+        ctx.fill();
+      });
+
+      const avgY = (indexFinger.y + middleFinger.y) / 2;
+
+      if (lastY !== null) {
+        const diff = avgY - lastY;
+
+        // 🔥 STRONG SCROLL (FIXED)
+        if (Math.abs(diff) > 0.003) {
+          window.scrollBy(0, diff * 5000);
+        }
+      }
+
+      lastY = avgY;
+
+    } else {
+      // ❗ HAND LOST → RESET (IMPORTANT FIX)
+      lostFrames++;
+      if (lostFrames > 5) {
+        lastY = null;
+      }
+    }
+  });
+
+  const camera = new Camera(video, {
+    onFrame: async () => {
+      await hands.send({ image: video });
+    },
+    width: 640,
+    height: 480
+  });
+
+  camera.start();
 }
-}
 
-lastY=avgY;
-}
-});
-
-const camera=new Camera(video,{
-onFrame:async()=>{await hands.send({image:video})}
-});
-camera.start();
-
+// Optional fallback hide
+setTimeout(() => {
+  if (trackingActive) {
+    const fb = document.getElementById("fallback");
+    if (fb) fb.style.display = "none";
+  }
+}, 4000);
 </script>
 
 </body>
