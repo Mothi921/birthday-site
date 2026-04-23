@@ -1,327 +1,383 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body {
-  margin: 0;
-  font-family: Georgia, serif;
-  background: radial-gradient(circle at top, #0b0f1a, #000);
-  color: white;
-  overflow-x: hidden;
+  margin:0;
+  font-family: Helvetica, Arial, sans-serif;
+  background: radial-gradient(circle at top, #020617, #000);
+  color:white;
+  overflow-x:hidden;
 }
 
-/* stars */
+/* STAR FIELD */
 body::before {
-  content: "";
-  position: fixed;
-  width: 100%;
-  height: 100%;
-  background: url('https://www.transparenttextures.com/patterns/stardust.png');
-  opacity: 0.25;
-  z-index: -1;
+  content:"";
+  position:fixed;
+  width:100%;
+  height:100%;
+  background:url("https://www.transparenttextures.com/patterns/stardust.png");
+  opacity:0.4;
+  z-index:-1;
 }
 
-/* shooting star */
-@keyframes shoot {
-  0% { transform: translate(-200px, -200px); opacity: 1;}
-  100% { transform: translate(120vw, 100vh); opacity: 0;}
-}
-.shooting-star {
-  position: fixed;
-  width: 2px;
-  height: 80px;
-  background: white;
-  top: 10%;
-  left: 0;
-  animation: shoot 5s linear infinite;
+/* METEOR */
+@keyframes meteor {
+  0% {transform:translate(-200px,-200px) rotate(45deg); opacity:1;}
+  100% {transform:translate(120vw,120vh) rotate(45deg); opacity:0;}
 }
 
-/* layout */
+.meteor {
+  position:fixed;
+  width:3px;
+  height:100px;
+  background:linear-gradient(white, transparent);
+  animation:meteor 4s linear infinite;
+}
+
+/* FULL IMAGE SECTION */
 .section {
-  display: none;
-  align-items: center;
-  justify-content: space-between;
-  padding: 100px 10%;
-  opacity: 0;
-  transform: translateY(40px);
-  transition: 1s ease;
+  display:none;
+  width:100%;
+  height:100vh;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 10%;
 }
 
 .section.show {
-  display: flex;
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.section:nth-child(even) {
-  flex-direction: row-reverse;
+  display:flex;
 }
 
 .photo {
-  width: 320px;
-  border-radius: 20px;
+  width:50%;
+  height:70%;
+  object-fit:cover;
+  border-radius:20px;
+  box-shadow:0 0 40px rgba(255,255,255,0.2);
 }
 
 .text-box {
-  max-width: 400px;
+  width:40%;
 }
 
 .text-box h2 {
-  font-size: 28px;
+  font-size:42px;
 }
 
+.text-box p {
+  font-size:20px;
+  line-height:1.6;
+}
+
+/* RIDDLE */
 .riddle {
-  text-align: center;
-  margin-top: 100px;
+  text-align:center;
+  margin-top:120px;
 }
 
 .riddle input {
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid white;
-  color: white;
-  font-size: 18px;
-  text-align: center;
+  padding:10px 20px;
+  border-radius:20px;
+  border:none;
+  outline:none;
+  font-size:18px;
 }
 
-/* popup */
+/* POPUP */
 .popup {
-  position: fixed;
-  top:0;
-  left:0;
+  position:fixed;
   width:100%;
   height:100%;
-  background: rgba(0,0,0,0.85);
+  background:rgba(0,0,0,0.9);
   display:flex;
+  flex-direction:column;
   justify-content:center;
   align-items:center;
-  flex-direction:column;
-  z-index:999;
+  z-index:1000;
+  font-size:28px;
+  text-align:center;
 }
 
-/* treasure */
+.popup button {
+  margin:15px;
+  padding:10px 30px;
+  font-size:18px;
+}
+
+/* TREASURE */
 #treasure {
   display:none;
   position:fixed;
-  top:0;
-  left:0;
   width:100%;
   height:100%;
   justify-content:center;
   align-items:center;
   flex-direction:column;
-  background: radial-gradient(circle, white, black);
-  z-index:1000;
-  color:black;
+  background: radial-gradient(circle,#000,#020617);
+  z-index:2000;
 }
 
-/* custom cursor */
+#chest {
+  font-size:80px;
+  cursor:pointer;
+}
+
+/* LETTER */
+#letter {
+  display:none;
+  background:#f5deb3;
+  color:#5a3e2b;
+  padding:30px;
+  width:60%;
+  font-family:cursive;
+  font-size:20px;
+  animation:openScroll 2s ease;
+}
+
+@keyframes openScroll {
+  from {height:0; opacity:0;}
+  to {height:auto; opacity:1;}
+}
+
+/* WEBCAM */
+video {
+  position:fixed;
+  bottom:10px;
+  right:10px;
+  width:200px;
+  border-radius:10px;
+}
+
+/* CURSOR */
 #cursor {
-  position: fixed;
-  width: 14px;
-  height: 14px;
-  background: white;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 2000;
+  position:fixed;
+  width:15px;
+  height:15px;
+  background:white;
+  border-radius:50%;
+  pointer-events:none;
+  z-index:3000;
 }
 </style>
 </head>
 
 <body>
 
-<div class="shooting-star"></div>
+<div class="meteor"></div>
 <div id="cursor"></div>
 
 <!-- RIDDLE 1 -->
 <div class="riddle">
 <p>Our go-to place to sweeten our tongues, even among a thousand ones</p>
-<input id="r1">
-<button onclick="checkR1()">→</button>
+<input id="r1" onkeypress="if(event.key==='Enter')checkR1()">
 </div>
 
 <div id="s1" class="section">
-<img src="photo1.jpg" class="photo">
 <div class="text-box">
 <h2>You changed everything</h2>
-<p>And I didn’t even see it coming.</p>
+<p>
+You walked into my life so quietly,<br>
+yet changed everything so loudly.<br>
+What started as moments,<br>
+turned into memories,<br>
+and now… something I never want to lose.
+</p>
 </div>
+<img src="photo1.jpg" class="photo">
 </div>
 
 <!-- RIDDLE 2 -->
 <div id="r2box" class="riddle" style="display:none">
 <p>The place where we sat, the rendezvous where it all began.</p>
-<input id="r2">
-<button onclick="checkR2()">→</button>
+<input id="r2" onkeypress="if(event.key==='Enter')checkR2()">
 </div>
 
 <div id="s2" class="section">
 <img src="photo2.jpg" class="photo">
 <div class="text-box">
-<h2>It started there</h2>
-<p>But it didn’t stay there.</p>
+<h2>Where it began</h2>
+<p>
+That place, that moment,<br>
+still lives in my mind.<br>
+Because unknowingly,<br>
+that’s where I found you.
+</p>
 </div>
 </div>
 
 <!-- RIDDLE 3 -->
 <div id="r3box" class="riddle" style="display:none">
 <p>We put this love in a photograph, we make these memories for ourselves.</p>
-<input id="r3">
-<button onclick="checkR3()">→</button>
+<input id="r3" onkeypress="if(event.key==='Enter')checkR3()">
 </div>
 
 <div id="s3" class="section">
-<img src="photo3.jpg" class="photo">
 <div class="text-box">
 <h2>Memories</h2>
-<p>We built something real.</p>
+<p>
+Every picture holds a feeling,<br>
+every moment tells a story,<br>
+and somehow,<br>
+every memory has you in it.
+</p>
 </div>
+<img src="photo3.jpg" class="photo">
 </div>
 
 <!-- RIDDLE 4 -->
 <div id="r4box" class="riddle" style="display:none">
 <p>The best coupleeeee in the entire universeeee.</p>
-<input id="r4">
-<button onclick="checkR4()">→</button>
+<input id="r4" onkeypress="if(event.key==='Enter')checkR4()">
 </div>
 
 <div id="s4" class="section">
 <img src="photo4.jpg" class="photo">
 <div class="text-box">
 <h2>Us</h2>
-<p>Always us.</p>
+<p>
+Not perfect,<br>
+not scripted,<br>
+just real…<br>
+and that’s what makes it everything.
+</p>
 </div>
 </div>
 
 <!-- TREASURE -->
 <div id="treasure">
-<h2>Click to Open the Treasure Chest Chellakutty</h2>
+<div id="chest" onclick="openChest()">🧰</div>
+<p>Click to open</p>
+
+<div id="letter">
+My dearest,<br><br>
+From the moment you came into my life,<br>
+everything felt different.<br>
+You made the ordinary feel magical,<br>
+and the smallest moments unforgettable.<br><br>
+This journey with you…<br>
+is something I never want to lose.<br><br>
+So here I am, asking you—<br>
+to stay, to grow, to build,<br>
+and to keep making memories with me.<br><br>
+Always yours ❤️
 </div>
+</div>
+
+<video id="webcam" autoplay playsinline></video>
 
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
 
 <script>
-
-// ===== RIDDLES (NO HINTS, EXACT MATCH) =====
-
+// RIDDLES
 function checkR1(){
-let a = document.getElementById("r1").value.toLowerCase().trim();
-if(a === "hod" || a === "high on desserts"){
-show("s1");
-document.getElementById("r2box").style.display="block";
+let a=r1.value.toLowerCase().trim();
+if(a==="hod"||a==="high on desserts"){
+s1.classList.add("show");
+r2box.style.display="block";
 }
 }
-
 function checkR2(){
-let a = document.getElementById("r2").value.toLowerCase().trim();
-if(a === "room 6" || a === "room six"){
-show("s2");
-document.getElementById("r3box").style.display="block";
+let a=r2.value.toLowerCase().trim();
+if(a==="room 6"||a==="room six"){
+s2.classList.add("show");
+r3box.style.display="block";
 }
 }
-
 function checkR3(){
-let a = document.getElementById("r3").value.toLowerCase().trim();
-if(a === "mkt"){
-show("s3");
-document.getElementById("r4box").style.display="block";
+let a=r3.value.toLowerCase().trim();
+if(a==="mkt"){
+s3.classList.add("show");
+r4box.style.display="block";
 }
 }
-
 function checkR4(){
-let a = document.getElementById("r4").value.toLowerCase().trim();
-if(a === "remo"){
-show("s4");
-setTimeout(proposal, 800);
+let a=r4.value.toLowerCase().trim();
+if(a==="remo"){
+s4.classList.add("show");
+setTimeout(showProposal,800);
 }
 }
 
-function show(id){
-document.getElementById(id).classList.add("show");
-}
-
-// ===== PROPOSAL POPUP =====
-
-function proposal(){
-let pop=document.createElement("div");
-pop.className="popup";
-pop.innerHTML=`
-<p>So Nee Yenna Kalyanam Panikiviya?<br>Aama Na Vandhu Bike Le Okaru Chellam.</p>
+// POPUP
+function showProposal(){
+let p=document.createElement("div");
+p.className="popup";
+p.innerHTML=`So Nee Yenna Kalyanam Panikiviya?<br><br>
 <button onclick="yes()">Yes</button>
-<button onclick="no()">No</button>
-`;
-document.body.appendChild(pop);
+<button onclick="no()">No</button>`;
+document.body.appendChild(p);
 }
-
 function no(){
 alert("Wrong answer 😏");
 document.querySelector(".popup").remove();
-proposal();
+showProposal();
 }
-
 function yes(){
 document.querySelector(".popup").remove();
-document.getElementById("treasure").style.display="flex";
+treasure.style.display="flex";
 }
 
-// ===== HAND TRACKING CURSOR =====
+// CHEST
+function openChest(){
+letter.style.display="block";
+}
 
-const cursor = document.getElementById("cursor");
-let pinch = false;
+// HAND TRACKING
+const video=document.getElementById("webcam");
+const cursor=document.getElementById("cursor");
+let lastY=null;
+let pinch=false;
 
-const video = document.createElement("video");
-video.style.display="none";
-document.body.appendChild(video);
-
-const hands = new Hands({
-locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+const hands=new Hands({
+locateFile:file=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
 });
 
-hands.setOptions({
-maxNumHands:1,
-minDetectionConfidence:0.6,
-minTrackingConfidence:0.6
-});
+hands.setOptions({maxNumHands:1});
 
 hands.onResults(res=>{
 if(res.multiHandLandmarks){
+let hand=res.multiHandLandmarks[0];
+let i=hand[8], m=hand[12], t=hand[4];
 
-const hand=res.multiHandLandmarks[0];
-const index=hand[8];
-const thumb=hand[4];
-
-// cursor movement
-let x=index.x*window.innerWidth;
-let y=index.y*window.innerHeight;
-
+// cursor
+let x=i.x*window.innerWidth;
+let y=i.y*window.innerHeight;
 cursor.style.left=x+"px";
 cursor.style.top=y+"px";
 
-// pinch detection
-let dist=Math.hypot(index.x-thumb.x,index.y-thumb.y);
+// scroll (2 fingers)
+let avgY=(i.y+m.y)/2;
+if(lastY!==null){
+let diff=avgY-lastY;
+window.scrollBy(0,diff*3000);
+}
+lastY=avgY;
 
-if(dist<0.04){
-pinch=true;
-}else{
+// pinch click
+let dist=Math.hypot(i.x-t.x,i.y-t.y);
+if(dist<0.04){pinch=true;}
+else{
 if(pinch){
 document.elementFromPoint(x,y)?.click();
 }
 pinch=false;
 }
+
+// 4 fingers gesture
+if(hand[16].y < hand[14].y && hand[20].y < hand[18].y){
+alert("I Love You Ridhanya ❤️");
+}
 }
 });
 
-const camera = new Camera(video,{
-onFrame: async()=>{await hands.send({image:video})},
-width:640,
-height:480
+const camera=new Camera(video,{
+onFrame:async()=>{await hands.send({image:video})}
 });
 camera.start();
-
 </script>
 
 </body>
