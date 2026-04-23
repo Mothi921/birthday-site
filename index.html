@@ -12,21 +12,17 @@ body {
   background: #0f0f0f;
   color: white;
   text-align: center;
+  scroll-behavior: smooth;
 }
 
 .section {
-  padding: 50px;
+  padding: 100px 20px;
 }
 
 .photo {
   width: 280px;
   border-radius: 20px;
-  transition: transform 0.3s;
-}
-
-#message {
-  font-size: 24px;
-  color: pink;
+  margin-top: 20px;
 }
 
 video, canvas {
@@ -34,6 +30,7 @@ video, canvas {
   bottom: 10px;
   right: 10px;
   width: 200px;
+  border-radius: 10px;
 }
 </style>
 </head>
@@ -44,34 +41,31 @@ video, canvas {
 
 <div class="section">
   <p>You make everything better ✨</p>
-  <img src="photo1.jpg" class="photo" id="photo">
+  <img src="photo1.jpg" class="photo">
 </div>
 
 <div class="section">
-  <p>Riddle 1: I hold memories but I’m not alive. What am I?</p>
-  <input id="r1">
-  <button onclick="checkR1()">Submit</button>
+  <p>Every moment with you feels special ❤️</p>
+  <img src="photo2.jpg" class="photo">
 </div>
 
-<div class="section" id="r2" style="display:none">
-  <p>Riddle 2: I speak without a mouth and hear without ears. What am I?</p>
-  <input id="r2input">
-  <button onclick="checkR2()">Submit</button>
+<div class="section">
+  <p>You are my favorite person 💫</p>
+  <img src="photo3.jpg" class="photo">
 </div>
 
-<div id="final" style="display:none" class="section">
-  <h2>❤️ Final Letter ❤️</h2>
-  <p>
-    My love,<br><br>
-    This was just a small way of showing how special you are to me.<br><br>
-    I love you ❤️
-  </p>
+<div class="section">
+  <p>And I wouldn’t trade this for anything 💖</p>
+  <img src="photo4.jpg" class="photo">
+</div>
+
+<div class="section">
+  <h2>My love ❤️</h2>
+  <p>This was just a small surprise for you.</p>
 </div>
 
 <video id="webcam" autoplay playsinline></video>
 <canvas id="canvas"></canvas>
-
-<div id="message"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
@@ -80,18 +74,18 @@ video, canvas {
 const video = document.getElementById("webcam");
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
-const photo = document.getElementById("photo");
-const message = document.getElementById("message");
 
 canvas.width = 640;
 canvas.height = 480;
+
+let lastY = null;
 
 const hands = new Hands({
   locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
 });
 
 hands.setOptions({
-  maxNumHands: 2,
+  maxNumHands: 1,
   minDetectionConfidence: 0.7,
   minTrackingConfidence: 0.7
 });
@@ -99,37 +93,33 @@ hands.setOptions({
 hands.onResults(results => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  if (results.multiHandLandmarks) {
+  if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
 
-    results.multiHandLandmarks.forEach(hand => {
+    const hand = results.multiHandLandmarks[0];
 
-      // draw points (for debugging)
-      hand.forEach(point => {
-        ctx.beginPath();
-        ctx.arc(point.x * canvas.width, point.y * canvas.height, 5, 0, 2*Math.PI);
-        ctx.fillStyle = "red";
-        ctx.fill();
-      });
+    const indexFinger = hand[8];
+    const middleFinger = hand[12];
 
-      // pinch detection
-      const thumb = hand[4];
-      const index = hand[8];
-
-      const dist = Math.hypot(thumb.x - index.x, thumb.y - index.y);
-
-      if (dist < 0.1) {
-        photo.style.transform = "scale(1.5)";
-      } else {
-        photo.style.transform = "scale(1)";
-      }
+    // DRAW RED DOTS (debug)
+    [indexFinger, middleFinger].forEach(point => {
+      ctx.beginPath();
+      ctx.arc(point.x * canvas.width, point.y * canvas.height, 8, 0, 2*Math.PI);
+      ctx.fillStyle = "red";
+      ctx.fill();
     });
 
-    // two hands = love trigger
-    if (results.multiHandLandmarks.length === 2) {
-      message.innerText = "I love you Ridhanya❤️";
-    } else {
-      message.innerText = "";
+    // average Y position
+    const avgY = (indexFinger.y + middleFinger.y) / 2;
+
+    if (lastY !== null) {
+      const diff = avgY - lastY;
+
+      if (Math.abs(diff) > 0.01) {
+        window.scrollBy(0, diff * 1200);
+      }
     }
+
+    lastY = avgY;
   }
 });
 
@@ -142,22 +132,6 @@ const camera = new Camera(video, {
 });
 
 camera.start();
-
-function checkR1() {
-  let ans = document.getElementById("r1").value.toLowerCase();
-  if (ans.includes("photo") || ans.includes("album")) {
-    document.getElementById("r2").style.display = "block";
-    alert("Correct ❤️");
-  } else alert("Try again");
-}
-
-function checkR2() {
-  let ans = document.getElementById("r2input").value.toLowerCase();
-  if (ans.includes("echo")) {
-    document.getElementById("final").style.display = "block";
-    alert("You made it ❤️");
-  } else alert("Try again");
-}
 </script>
 
 </body>
