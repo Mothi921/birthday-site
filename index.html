@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>For You ❤️</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #0f0f0f;
+  color: white;
+  text-align: center;
+}
+
+.section {
+  padding: 50px;
+}
+
+.photo {
+  width: 280px;
+  border-radius: 20px;
+  transition: transform 0.3s;
+}
+
+#message {
+  font-size: 24px;
+  color: pink;
+}
+
+video, canvas {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  width: 200px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>For You ❤️</h1>
+
+<div class="section">
+  <p>You make everything better ✨</p>
+  <img src="assets/photo1.jpg" class="photo" id="photo">
+</div>
+
+<div class="section">
+  <p>Riddle 1: I hold memories but I’m not alive. What am I?</p>
+  <input id="r1">
+  <button onclick="checkR1()">Submit</button>
+</div>
+
+<div class="section" id="r2" style="display:none">
+  <p>Riddle 2: I speak without a mouth and hear without ears. What am I?</p>
+  <input id="r2input">
+  <button onclick="checkR2()">Submit</button>
+</div>
+
+<div id="final" style="display:none" class="section">
+  <h2>❤️ Final Letter ❤️</h2>
+  <p>
+    My love,<br><br>
+    This was just a small way of showing how special you are to me.<br><br>
+    I love you ❤️
+  </p>
+</div>
+
+<video id="webcam" autoplay playsinline></video>
+<canvas id="canvas"></canvas>
+
+<div id="message"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+
+<script>
+const video = document.getElementById("webcam");
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const photo = document.getElementById("photo");
+const message = document.getElementById("message");
+
+canvas.width = 640;
+canvas.height = 480;
+
+const hands = new Hands({
+  locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+});
+
+hands.setOptions({
+  maxNumHands: 2,
+  minDetectionConfidence: 0.7,
+  minTrackingConfidence: 0.7
+});
+
+hands.onResults(results => {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (results.multiHandLandmarks) {
+
+    results.multiHandLandmarks.forEach(hand => {
+
+      // draw points (for debugging)
+      hand.forEach(point => {
+        ctx.beginPath();
+        ctx.arc(point.x * canvas.width, point.y * canvas.height, 5, 0, 2*Math.PI);
+        ctx.fillStyle = "red";
+        ctx.fill();
+      });
+
+      // pinch detection
+      const thumb = hand[4];
+      const index = hand[8];
+
+      const dist = Math.hypot(thumb.x - index.x, thumb.y - index.y);
+
+      if (dist < 0.05) {
+        photo.style.transform = "scale(1.5)";
+      } else {
+        photo.style.transform = "scale(1)";
+      }
+    });
+
+    // two hands = love trigger
+    if (results.multiHandLandmarks.length === 2) {
+      message.innerText = "I love you Ridhanya❤️";
+    } else {
+      message.innerText = "";
+    }
+  }
+});
+
+const camera = new Camera(video, {
+  onFrame: async () => {
+    await hands.send({ image: video });
+  },
+  width: 640,
+  height: 480
+});
+
+camera.start();
+
+function checkR1() {
+  let ans = document.getElementById("r1").value.toLowerCase();
+  if (ans.includes("photo") || ans.includes("album")) {
+    document.getElementById("r2").style.display = "block";
+    alert("Correct ❤️");
+  } else alert("Try again");
+}
+
+function checkR2() {
+  let ans = document.getElementById("r2input").value.toLowerCase();
+  if (ans.includes("echo")) {
+    document.getElementById("final").style.display = "block";
+    alert("You made it ❤️");
+  } else alert("Try again");
+}
+</script>
+
+</body>
+</html>
